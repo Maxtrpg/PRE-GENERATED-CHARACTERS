@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>馬茲提卡：預設角色</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 1. 基礎設定 --- */
+        :root {
+            --obsidian: #0a0a0a;
+            --blood: #8a0303;
+            --gold: #d4af37;
+            --gold-bright: #f4d078;
+            --gold-glow: rgba(212, 175, 55, 0.5);
+            --text-light: #e0e0e0;
+            --text-dim: #a0a0a0;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--obsidian);
+            background-image: radial-gradient(circle at 50% 50%, transparent 20%, #000 90%), url('https://www.transparenttextures.com/patterns/black-scales.png'); 
+            background-repeat: repeat; background-attachment: fixed;
+            color: var(--text-light);
+            font-family: 'Crimson Pro', serif;
+            font-size: 1rem; line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .char-name, header h1, .modal-title {
+            font-family: 'Cinzel', serif; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; margin: 0;
+        }
+
+        /* 技能標籤 */
+        .skill-tag-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .skill-tag {
+            display: inline-flex; justify-content: flex-start; align-items: center; flex-shrink: 0; width: 110px; 
+            padding: 6px 0 6px 12px; font-family: 'Cinzel', serif; font-size: 0.9rem; letter-spacing: 1px; font-weight: bold;
+            background: linear-gradient(135deg, #2a1a1a, #1a0a0a); color: #ccc; border: 1px solid #553333; border-radius: 2px;
+            cursor: default; transition: all 0.3s; box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+        .skill-tag::before { content: '◆'; color: var(--gold); font-size: 0.6rem; margin-right: 8px; opacity: 0.8; }
+        .skill-tag:hover { border-color: var(--gold); color: #fff; background: linear-gradient(135deg, #3a2a00, #221a00); box-shadow: 0 0 10px rgba(212, 175, 55, 0.4); transform: translateY(-2px); }
+
+        /* 背景故事排版 */
+        .detail-row { display: flex; align-items: flex-start; margin-bottom: 12px; line-height: 1.7; }
+        .detail-content { flex: 1; padding-top: 2px; }
+        .inline-tag {
+            flex-shrink: 0; display: inline-block; width: 100px; text-align: center;
+            font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 700; color: var(--gold-bright);
+            background: linear-gradient(180deg, rgba(30, 30, 30, 0.9), rgba(10, 10, 10, 0.8));
+            border: 1px solid var(--gold); border-radius: 2px; padding: 2px 0; margin-right: 15px; margin-top: 3px;
+            text-shadow: 0 1px 2px black; box-shadow: 0 0 5px rgba(212, 175, 55, 0.15);
+        }
+        .inline-tag.name { border-color: #a84444; color: #ffcccc; background: linear-gradient(180deg, rgba(60, 20, 20, 0.9), rgba(30, 10, 10, 0.8)); }
+
+        /* Header */
+        header {
+            min-height: 40vh; padding: 60px 20px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3), var(--obsidian)), url('images/temple_active_bg.webp');
+            background-size: cover; background-position: center 30%; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            border-bottom: 4px solid var(--blood); position: relative; z-index: 2; overflow: hidden;
+        }
+        
+        /* 標題與文字 */
+        header h1 { font-size: 3.5rem; margin-bottom: 10px; color: var(--gold-bright); letter-spacing: 0.05em; text-shadow: 0 2px 0px #3a2a00, 0 0 30px var(--gold-glow); position: relative; z-index: 10; }
+        header p.subtitle { font-family: 'Cinzel', serif; position: relative; z-index: 10; font-size: 1.2rem; color: var(--gold); letter-spacing: 4px; text-shadow: 0 2px 5px black; opacity: 0.9; }
+        
+        /* 內容容器 */
+        .content-wrapper { position: relative; z-index: 10; min-height: 60vh; background: var(--obsidian); padding-top: 0; }
+        
+        /* 角色卡片區 */
+        .accordion-section { padding: 0; background: #000; overflow: hidden; position: relative; z-index: 2; box-shadow: 0 -20px 50px rgba(0,0,0,1); }
+        .accordion-container { display: flex; width: 100%; height: 80vh; min-height: 600px; }
+        .acc-card { position: relative; flex: 1; height: 100%; cursor: pointer; transition: flex 0.6s cubic-bezier(0.25, 1, 0.5, 1), filter 0.4s; border-right: 1px solid rgba(255,255,255,0.1); filter: grayscale(80%) brightness(0.5); overflow: hidden; }
+        .acc-card:last-child { border-right: none; }
+        .acc-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: var(--char-img); background-size: cover; background-position: center; filter: blur(20px) brightness(0.4); z-index: 0; }
+        .acc-card::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: var(--char-img); background-size: cover; background-position: top center; background-repeat: no-repeat; z-index: 1; }
+        .acc-card:hover { flex: 4; filter: grayscale(0%) brightness(1.1); }
+        .accordion-container:hover .acc-card:not(:hover) { filter: grayscale(100%) brightness(0.3); }
+        
+        .acc-overlay { position: absolute; bottom: 0; left: 0; width: 100%; padding: 40px 20px; background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0)); opacity: 0; transform: translateY(20px); transition: all 0.4s ease 0.1s; text-align: center; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+        .acc-card:hover .acc-overlay { opacity: 1; transform: translateY(0); }
+        .acc-title { font-family: 'Cinzel', serif; font-size: 2.5rem; color: var(--gold); text-shadow: 0 4px 10px rgba(0,0,0,0.9); margin-bottom: 5px; white-space: nowrap; }
+        .acc-role { font-size: 1rem; color: #ccc; font-style: italic; display: inline-block; margin-bottom: 15px; border-bottom: 1px solid var(--blood); padding-bottom: 5px; }
+        .acc-quote { font-family: 'Crimson Pro', serif; font-size: 0.95rem; color: #aaa; font-style: italic; max-width: 80%; line-height: 1.4; margin-top: 5px; display: none; border-left: 2px solid var(--gold); padding-left: 10px; text-align: left; }
+        .acc-card:hover .acc-quote { display: block; animation: fadeIn 0.8s; }
+
+        @media (max-width: 1024px) { header h1 { font-size: 2.5rem; } .accordion-container { flex-direction: row; overflow-x: auto; scroll-snap-type: x mandatory; height: 500px; } .acc-card { flex: 0 0 85vw; scroll-snap-align: center; filter: grayscale(0%) brightness(0.9); border-right: none; margin-right: 10px; } .acc-card::after { background-size: cover; background-position: center 20%; } .acc-overlay { opacity: 1; transform: translateY(0); background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); } .acc-title { font-size: 2rem; } .acc-card:hover { flex: 0 0 85vw; } }
+
+        /* Footer */
+        footer { background: black; padding: 20px; text-align: center; color: var(--text-dim); font-size: 0.8rem; border-top: 2px solid #222; position: relative; z-index: 2; }
+
+        /* --- MODAL STYLES --- */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.95); z-index: 1000; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; backdrop-filter: blur(5px); }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-content { background: #151515; border: 2px solid var(--gold); width: 90%; max-width: 1100px; height: 85vh; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 60px rgba(212, 175, 55, 0.2); overflow: hidden; animation: slideUp 0.4s ease-out; }
+        .close-btn { position: absolute; top: 15px; right: 25px; font-size: 40px; color: var(--text-dim); cursor: pointer; z-index: 10; line-height: 0.5; transition: 0.2s; } .close-btn:hover { color: var(--gold); transform: rotate(90deg); }
+        .modal-grid { display: flex; flex-direction: row; height: 100%; }
+        .modal-image-col { flex: 1; background-color: #000; min-height: 400px; position: relative; overflow: hidden; }
+        .modal-image-placeholder { width: 100%; height: 100%; background-size: cover; background-position: top center; transition: transform 10s ease; }
+        .modal-overlay.active .modal-image-placeholder { transform: scale(1.1); }
+        
+        .modal-info-col { flex: 1.2; padding: 50px; overflow-y: auto; background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.8)), url('https://www.transparenttextures.com/patterns/black-scales.png'), linear-gradient(135deg, #1a0505 0%, #2a1a0a 100%); scrollbar-width: thin; scrollbar-color: var(--gold) #222; }
+        .modal-info-col::-webkit-scrollbar { width: 8px; } .modal-info-col::-webkit-scrollbar-track { background: #111; } .modal-info-col::-webkit-scrollbar-thumb { background-color: var(--gold); border-radius: 4px; }
+        
+        .char-header-plate { text-align: center; margin-bottom: 25px; padding: 20px; border: 1px solid var(--gold); border-left: none; border-right: none; background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.6) 50%, transparent 100%); position: relative; }
+        .char-header-plate::before { content: '❖'; font-size: 1.5rem; color: var(--gold); position: absolute; top: 50%; left: 10px; transform: translateY(-50%); }
+        .char-header-plate::after { content: '❖'; font-size: 1.5rem; color: var(--gold); position: absolute; top: 50%; right: 10px; transform: translateY(-50%); }
+        .modal-title { font-size: 3.2rem; margin: 0; display: block; background: linear-gradient(to bottom, #fff5c2 20%, #d4af37 80%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 2px 0px #3a2a00); position: relative; z-index: 2; }
+        .title-glow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 200px; background: radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, transparent 70%); pointer-events: none; z-index: 1; }
+        .modal-subtitle { font-size: 1.2rem; color: #dcbfa3; font-style: italic; margin-top: 5px; font-family: 'Crimson Pro', serif; letter-spacing: 1px; }
+        
+        .modal-stats-box { padding: 0 0 10px 0; background: transparent; border: none; }
+        .stats-container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin: 25px 0; width: 100%; box-sizing: border-box; }
+        .stat-glyph { background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(30,10,0,0.6) 100%); border: 1px solid #554433; border-bottom: 3px solid #886644; border-radius: 4px; padding: 15px 5px; text-align: center; position: relative; transition: all 0.3s; cursor: default; overflow: hidden; }
+        .stat-name { display: block; font-family: 'Cinzel', serif; font-size: 0.8rem; color: #aaa; letter-spacing: 1px; margin-bottom: 5px; transition: color 0.3s; }
+        .stat-value { display: block; font-family: 'Cinzel', serif; font-size: 1.8rem; font-weight: 700; color: #e0e0e0; text-shadow: 2px 2px 0px rgba(0,0,0,0.5); transition: all 0.3s; }
+        .stat-glyph:hover { transform: translateY(-5px); background: linear-gradient(180deg, #222 0%, #3a2a00 100%); border-color: var(--gold); border-bottom-color: var(--gold); box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3); }
+        .stat-glyph:hover .stat-name { color: var(--gold); } .stat-glyph:hover .stat-value { color: #fff; text-shadow: 0 0 10px var(--gold); transform: scale(1.1); }
+        .stat-glyph::after { content: attr(data-label); position: absolute; bottom: 0; left: 0; width: 100%; font-size: 0.6rem; color: #000; background-color: var(--gold); padding: 2px 0; transform: translateY(100%); transition: transform 0.3s; font-weight: bold; font-family: 'sans-serif'; }
+        .stat-glyph:hover::after { transform: translateY(0); }
+        .styled-h3 { color: var(--gold); font-family: 'Cinzel', serif; font-size: 1.1rem; margin-top: 30px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 1px solid rgba(212, 175, 55, 0.3); letter-spacing: 1px; text-shadow: 0 0 5px rgba(212, 175, 55, 0.2); opacity: 0.9; }
+        .modal-text-content p { color: #e0e0e0; font-size: 1.05rem; margin-bottom: 15px; line-height: 1.8; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+        
+        .ability-btn { width: 100%; padding: 12px 18px; font-family: 'Cinzel', serif; font-size: 1rem; font-weight: bold; color: #d0d0d0; background: linear-gradient(90deg, #1a0a0a, #2a1a1a); border: 1px solid #553333; border-left: 3px solid #664444; cursor: pointer; position: relative; overflow: hidden; text-align: left; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .ability-btn:hover, .ability-btn.active { color: var(--gold); border-color: var(--gold); border-left-color: var(--gold); background: linear-gradient(90deg, rgba(212, 175, 55, 0.1), transparent); box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); padding-left: 25px; }
+        .ability-btn::before { content: '✦'; position: absolute; left: 5px; top: 50%; transform: translateY(-50%) scale(0); color: var(--gold); transition: all 0.3s; }
+        .ability-btn:hover::before, .ability-btn.active::before { transform: translateY(-50%) scale(1); }
+        .ability-indicator { font-size: 1.2rem; transition: transform 0.3s; color: #666; }
+        .ability-btn:hover .ability-indicator { color: var(--gold); }
+        .ability-btn.active .ability-indicator { transform: rotate(45deg); color: var(--gold); }
+        .ability-content { max-height: 0; overflow: hidden; background: rgba(0, 0, 0, 0.3); border-left: 2px solid rgba(212, 175, 55, 0.3); margin-left: 10px; transition: max-height 0.4s ease-out, opacity 0.4s ease; opacity: 0; }
+        .ability-content p { padding: 15px; margin: 0; color: #ccc; font-size: 0.95rem; font-style: normal; }
+        .ability-content.active { max-height: 600px; opacity: 1; }
+        
+        /* 裝備欄 (純文字版) */
+        .gear-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 30px; }
+        .gear-slot { 
+            position: relative; width: 100%; background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%); 
+            border: 1px solid #444; border-left: 3px solid #666; border-radius: 4px; padding: 15px; 
+            display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;
+            transition: all 0.3s; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); 
+        }
+        .gear-slot:hover { transform: translateX(5px); border-color: var(--gold); border-left-color: var(--gold); box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); }
+        .gear-name-label { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--gold-bright); margin-bottom: 8px; font-weight: bold; width: 100%; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .gear-desc-text { font-family: 'Crimson Pro', serif; font-size: 0.95rem; color: #bbb; line-height: 1.4; font-style: italic; }
+
+        @media (max-width: 768px) {
+            .modal-grid { flex-direction: column; } .modal-image-col { min-height: 300px; flex: none; } .modal-title { font-size: 2.2rem; }
+            .modal-content { height: 95vh; width: 95%; } .modal-info-col { padding: 20px; }
+            .stats-container { grid-template-columns: repeat(3, 1fr); gap: 8px; } .stat-value { font-size: 1.5rem; }
+            .gear-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="fixed-background"></div>
+    <canvas id="dustCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; opacity: 0.6;"></canvas>
+
+    <header>
+        <p style="letter-spacing: 3px; font-size: 0.8rem; color: var(--text-dim); position: relative; z-index: 10;">馬茲提卡</p>
+        <h1 style="position: relative; z-index: 10;">預設角色</h1>
+        <p class="subtitle">PRE-GENERATED CHARACTERS</p>
+    </header>
+
+    <div class="content-wrapper">
+        <section class="accordion-section">
+            <div class="accordion-container">
+                <div class="acc-card" onclick="openModal('atl')" style="--char-img: url('images/atl.webp');">
+                    <div class="acc-overlay">
+                        <h3 class="acc-title">阿特爾</h3>
+                        <span class="acc-role">帕伊特人 · 天命曜日薩滿</span>
+                        <p class="acc-quote">「舊的儀式已經生鏽了。神靈需要新的火焰，而我就是那個點火的人。」</p>
+                    </div>
+                </div>
+                <div class="acc-card" onclick="openModal('xiupilli')" style="--char-img: url('images/xiupilli.webp');">
+                    <div class="acc-overlay">
+                        <h3 class="acc-title">秀皮利</h3>
+                        <span class="acc-role">帕伊特人 · 鷹騎士</span>
+                        <p class="acc-quote">「年輕人談論榮耀，是因為他們沒見過腸子流出來的樣子。活著回來，就是唯一的榮耀。」</p>
+                    </div>
+                </div>
+                <div class="acc-card" onclick="openModal('igrrtaca')" style="--char-img: url('images/igrrtaca.webp');">
+                    <div class="acc-overlay">
+                        <h3 class="acc-title">伊格塔卡</h3>
+                        <span class="acc-role">豹人 · 叢林戰士</span>
+                        <p class="acc-quote">「你的心跳聲太吵了，獵物都讓你嚇跑了。跟著我的影子，別出聲。」</p>
+                    </div>
+                </div>
+                <div class="acc-card" onclick="openModal('arascotl')" style="--char-img: url('images/arascotl.webp');">
+                    <div class="acc-overlay">
+                        <h3 class="acc-title">阿拉斯托</h3>
+                        <span class="acc-role">鷹人 · 懸崖獵手</span>
+                        <p class="acc-quote">「風向變了……有些東西不該出現在這片天空下。我的弓已經準備好了。」</p>
+                    </div>
+                </div>
+                <div class="acc-card" onclick="openModal('durth')" style="--char-img: url('images/durth.webp');">
+                    <div class="acc-overlay">
+                        <h3 class="acc-title">杜爾斯</h3>
+                        <span class="acc-role">沙漠矮人 · 數律學者</span>
+                        <p class="acc-quote">「別跟我談直覺！這座神廟的幾何結構完全違反了力學常數，這才是災難的源頭！」</p>
+                    </div>
+                </div>
+                <div class="acc-card" onclick="openModal('meztli')" style="--char-img: url('images/meztli.webp');">
+                    <div class="acc-overlay">
+                        <h3 class="acc-title">梅茲莉</h3>
+                        <span class="acc-role">半身人 · 羽織工匠</span>
+                        <p class="acc-quote">「哎呀，別急躁。最強大的護符往往是用最輕柔的羽毛編織而成的。來，把這戴上。」</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Maztica Campaign. Powered by Dragonbane System.</p>
+    </footer>
+
+    <div id="charModal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-btn" onclick="closeModal(event)">&times;</span>
+            <div class="modal-grid">
+                <div class="modal-image-col"><div id="modalImage" class="modal-image-placeholder"></div></div>
+                <div class="modal-info-col">
+                    <div class="char-header-plate">
+                        <div class="title-glow"></div>
+                        <h2 id="modalName" class="modal-title">CHARACTER NAME</h2>
+                        <p id="modalRole" class="modal-subtitle">Class & Role</p>
+                    </div>
+                    <div class="modal-stats-box">
+                        <div class="stats-container">
+                            <div class="stat-glyph" data-label="力量 Strength"><span class="stat-name">STR</span><span class="stat-value" id="statSTR">0</span></div>
+                            <div class="stat-glyph" data-label="體質 Constitution"><span class="stat-name">CON</span><span class="stat-value" id="statCON">0</span></div>
+                            <div class="stat-glyph" data-label="敏捷 Agility"><span class="stat-name">AGI</span><span class="stat-value" id="statAGI">0</span></div>
+                            <div class="stat-glyph" data-label="智力 Intelligence"><span class="stat-name">INT</span><span class="stat-value" id="statINT">0</span></div>
+                            <div class="stat-glyph" data-label="意志 Willpower"><span class="stat-name">WIL</span><span class="stat-value" id="statWIL">0</span></div>
+                            <div class="stat-glyph" data-label="魅力 Charisma"><span class="stat-name">CHA</span><span class="stat-value" id="statCHA">0</span></div>
+                        </div>
+                    </div>
+                    <div class="modal-text-content">
+                        <h3 class="styled-h3">背景故事</h3><div id="backstoryContainer" class="abilities-list"></div>
+                        <h3 class="styled-h3">主要擅長</h3><div id="modalSkills" class="skill-tag-container"></div>
+                        <h3 class="styled-h3">能力特性</h3><div id="heroAbilitiesContainer" class="abilities-list"></div>
+                        <h3 class="styled-h3">特殊物品</h3><div id="modalGearContainer" class="gear-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const characters = {
+        atl: {
+            name: "阿特爾", 
+            role: "帕伊特人．日術薩滿", 
+            image: "images/atl.webp",
+            stats: { STR: 10, CON: 11, AGI: 13, INT: 15, WIL: 16, CHA: 14 },
+            backstory: [
+                { name: "核心信念", desc: "「舊的儀式已經生鏽了。神靈需要新的火焰，而我就是那個點火的人。」<br><br><strong>革新者：</strong>正值壯年的他擁有無窮的精力與野心，渴望重塑帕伊特的信仰體系。" },
+                { name: "出身背景", desc: "烏拉托斯最年輕的高階祭司。與那些只會躲在神廟裡的老人不同，阿特爾相信神蹟必須在荒野中展現。<br><div class='detail-row'><span class='inline-tag'>太陽之子</span><div class='detail-content'>他天生擁有強大的神力共鳴，被視為「曜日的寵兒」。他的自信並非傲慢，而是源於實力。</div></div>" },
+                { name: "冒險動機", desc: "他主動要求接下這個危險的調查任務，不只是為了執行命令，更是為了證明自己有能力領導下一代的帕伊特。他將這次旅程視為自己的「加冕之路」。" },
+                { name: "扮演方針", desc: "<div class='detail-row'><span class='inline-tag'>扮演建議</span><div class='detail-content'>充滿魅力、聲音洪亮、總是站在隊伍最前方。你習慣用激勵人心的話語來鼓舞士氣，偶爾會展現出貴族的優越感。</div></div><br><div class='detail-row'><span class='inline-tag'>性格弱點</span><div class='detail-content'>過度自信。你相信自己受神眷顧，因此常低估環境的危險。你需要秀皮利來提醒你「泥沼不會在乎你是誰」。</div></div>" },
+                { name: "羈絆關係", desc: "<div class='detail-row'><span class='inline-tag name'>秀皮利</span><div class='detail-content'>他是你父親的舊友，也是你最信任的「老傢伙」。雖然他總是潑你冷水，但你知道當箭射來時，他會第一個擋在你面前。<br>你敬重他的經驗，但也發誓要創造一個不需要老兵再流血的新世界。</div></div><div class='detail-row'><span class='inline-tag name'>杜爾斯</span><div class='detail-content'>他是隊伍裡唯一能跟你進行「高智商對話」的人。雖然他只信數學，你信神學，但你們都追求世界的「真理」。<br>你們經常在營火旁爭論是「神意」還是「機率」決定了今天的晚餐。</div></div><div class='detail-row'><span class='inline-tag name'>伊格塔卡</span><div class='detail-content'>這個叢林小子充滿了野性與不可控的變數。你試圖用文明教化他，但他似乎只對你手中的食物感興趣。<br>你擔心他的嗜血本性會壞了大事，但也承認他的直覺在叢林中無可取代。</div></div><div class='detail-row'><span class='inline-tag name'>阿拉斯托</span><div class='detail-content'>他像是風的使者，總是高高在上。你尊重他的獨立，但也希望他能更融入集體。<br>你常委託他進行空中偵察，視他的眼睛為隊伍的「先知」。</div></div><div class='detail-row'><span class='inline-tag name'>梅茲莉</span><div class='detail-content'>她是隊伍溫暖的核心。當你因領導壓力而緊繃時，她的一杯熱茶和幾句溫和的話語總能讓你放鬆。<br>你視她為長輩，對她保持著除了秀皮利以外少有的謙遜。</div></div>" }
+            ],
+            skills: ["天命曜日", "醫療", "祕聞傳說", "遊說", "察覺", "語言"],
+            heroAbilities: [
+                { name: "英雄讚歌", desc: "你熟記歷史上許多偉大英雄的事蹟，並能在關鍵時刻透過詩歌喚醒他人的勇氣。當你目睹一名盟友進行檢定失敗時，你可以發動此能力(無須動作)。你吟誦一段相關的英雄史詩，激發該盟友內在的潛能。該盟友可以立即重骰該次檢定，並必須接受重骰的結果。" },
+                { name: "太陽射線", desc: "你從手掌射出一道聚焦的光束。造成 2D6 火焰傷害。若目標是亡靈或具有「畏光」特性的生物，傷害提升至 2D8 並獲得 暈眩 狀態。" },
+                { name: "太陽閃光", desc: "當你受到近戰攻擊時，你反射強烈的陽光。該次對你的攻擊獲得劣勢。" },
+                { name: "天命薪火", desc: "你將一名盟友的天命與自己連結，誓言成為其生命的燃料。當該盟友即將受到足以使其 HP 歸零 的傷害時，你可以使用反應，瞬間燃燒自己的意志值（WP）來護住盟友的靈魂熱力。" }
+            ],
+            gear: [
+                { name: "黑耀鏡權杖", desc: "頂端鑲嵌著黑曜石鏡的權杖，象徵曜日祭司的權威。既是法器，也是身份的證明。" },
+                { name: "先祖圖騰", desc: "掛在腰間的陳舊木雕，繫著歷代導師的信物。據說在危急時刻能聽見先祖的低語。" }
+            ]
+        },
+        xiupilli: {
+            name: "秀皮利", 
+            role: "帕伊特人 · 鷹騎士", 
+            image: "images/xiupilli.webp",
+            stats: { STR: 15, CON: 16, AGI: 10, INT: 12, WIL: 14, CHA: 12 },
+            backstory: [
+                { name: "核心信念", desc: "「年輕人談論榮耀，是因為他們沒見過腸子流出來的樣子。活著回來，就是唯一的榮耀。」<br><br><strong>守墓人：</strong>他見證了太多死亡，現在他唯一的目標就是確保隊伍裡的年輕人能活到明天。" },
+                { name: "出身背景", desc: "前鷹騎士團教官之一，被稱為「不死的斷羽」。他身上每一道傷疤都是一個故事。<br><div class='detail-row'><span class='inline-tag'>最後的誓言</span><div class='detail-content'>他原本已經退隱，但為了履行對阿特爾父親的承諾，他重新穿上了那件老舊的鷹羽甲。他不是為了帕伊特而戰，是為了這群孩子而戰。</div></div>" },
+                { name: "現況", desc: "作為副隊長，他實際上是隊伍的「保姆」。他負責檢查營地安全、分配守夜，並在阿特爾腦充血想衝鋒時，冷靜地抓住他的後領。" },
+                { name: "扮演方針", desc: "<div class='detail-row'><span class='inline-tag'>扮演建議</span><div class='detail-content'>嗓音沙啞、說話簡短毒舌、總是充滿懷疑。你習慣用最壞的打算來評估情況。</div></div><br><div class='detail-row'><span class='inline-tag'>性格弱點</span><div class='detail-content'>身體衰退。你的戰鬥技巧依然頂尖，但體力已不如從前。久戰對你來說是致命的，你必須速戰速決。</div></div>" },
+                { name: "羈絆關係", desc: "<div class='detail-row'><span class='inline-tag name'>阿特爾</span><div class='detail-content'>你看著他長大。這小子有天賦，但太狂了。你的職責就是確保他在成為傳奇之前，別先變成屍體。<br>你對他的態度是嚴厲的愛，不容許他犯下致命的錯誤。</div></div><div class='detail-row'><span class='inline-tag name'>阿拉斯托</span><div class='detail-content'>你在戰場上救過這隻雛鷹。你視他為義子或學徒，試圖教導他鷹騎士的規矩。<br>當他成功射中目標時，你會極力隱藏嘴角的笑意，只淡淡說一句「還行」。</div></div><div class='detail-row'><span class='inline-tag name'>伊格塔卡</span><div class='detail-content'>這隻小豹子完全沒有紀律可言！他打架像是在玩鬧，毫無章法。<br>你經常吼他，但他總是對你做鬼臉。雖然嘴上嫌棄，但戰鬥時你會下意識地幫他擋下致命一擊。</div></div><div class='detail-row'><span class='inline-tag name'>杜爾斯</span><div class='detail-content'>雖然你不懂那些複雜的算式，但你尊敬這位矮人的沈穩與堅韌。<br>他是隊伍裡另一個懂得「戰場現實」的人，你們常在守夜時交換沈默的眼神與烈酒。</div></div><div class='detail-row'><span class='inline-tag name'>梅茲莉</span><div class='detail-content'>她是你的老戰友，也是唯一能讓你卸下心防的人。<br>每當你舊傷復發，只有她能用草藥緩解你的疼痛。你誓言要用生命守護這位溫柔的編織者。</div></div>" }
+            ],
+            skills: ["劍", "矛", "投槍器", "表演", "體操", "求生"],
+            heroAbilities: [
+                { name: "羽父之祝福", desc: "當你死亡時，下一輪你的身體將會發出神性的光輝，你視為獲得 碎魂換生 法術的效果，且不會受到負面影響。一旦此祝福發動後，你將永久失去此項特性。" },
+                { name: "守護者", desc: "你願意毫不猶豫地為盟友擋下攻擊。若你和另一名盟友都與同一名敵人相距 2 米內，當該敵人嘗試攻擊你的盟友時，你可以發動此能力，強迫敵人改為攻擊你。此能力可以在你的回合外使用，且不需要花費動作。" },
+                { name: "守衛矛陣", desc: "你將木矛架起，黑曜石刃片對準前方，形成絕對的防禦圈。發動此能力後，你進入「防衛」姿態，任何敵人試圖進入你近戰範圍（2米）內時，你都可以立即使用反應動作（若你回合還未結束）對其進行一次攻擊。若該次攻擊命中，除了造成傷害外，敵人的移動立即結束（被木矛架住或逼退），無法再靠近你。此外，在此狀態下你的 閃避 或 格檔 都具有優勢。此姿態直到你移動或你主動進行攻擊而解除。" },
+                { name: "獵鷹之姿", desc: "你經過嚴酷的訓練，能在戰場上展現出如同獵鷹般的靈活性。你可以用一個自由動作發動此能力。你該回合的移動速度變成兩倍，且你的移動不會引發敵人的藉機攻擊。你利用滑步、翻滾與蹬牆跳躍穿梭於敵陣之間，直取高價值目標。" }
+            ],
+            gear: [
+                { name: "馬夸維爾特", desc: "邊緣嵌滿黑曜石的木劍，帕伊特戰士的傳統武器。雖有缺口但依舊鋒利。" },
+                { name: "鷹騎士頭盔", desc: "模仿鷹頭造型的開面頭盔，能提供良好的視野與威懾力。羽毛已有些褪色。" }
+            ]
+        },
+        igrrtaca: {
+            name: "伊格塔卡", 
+            role: "狩豹人 · 盜賊", 
+            image: "images/igrrtaca.webp",
+            stats: { STR: 12, CON: 13, AGI: 17, INT: 9, WIL: 13, CHA: 10 },
+            backstory: [
+                { name: "核心信念", desc: "「你的心跳聲太吵了，獵物都讓你嚇跑了。跟著我的影子，別出聲。」<br><br><strong>生存本能：</strong>相信力量與速度是叢林唯一的法則，對文明社會的繁文縟節嗤之以鼻。" },
+                { name: "出身背景", desc: "來自叢林深處的狂野部族。他的部族正受到不明的威脅，為了尋求對抗邪惡的盟友與力量，他被迫離開叢林來到帕伊特。<br><div class='detail-row'><span class='inline-tag'>野性天賦</span><div class='detail-content'>雖然年紀尚輕，但他的戰鬥本能已足以令成年戰士汗顏。他說話時喉嚨深處常帶有像豹一樣的呼嚕聲。</div></div>" },
+                { name: "扮演方針", desc: "<div class='detail-row'><span class='inline-tag'>扮演建議</span><div class='detail-content'>好動、好奇、野性難馴。你喜歡蹲在椅子上而不是坐著，喜歡吃生肉。說話直白，不懂人類的禮貌。</div></div><br><div class='detail-row'><span class='inline-tag'>性格弱點</span><div class='detail-content'>易受挑釁與缺乏耐性。你很難安靜地聽完長篇大論的計畫，容易因為敵人的挑釁而陷入狂暴，衝亂隊伍的陣型。</div></div>" },
+                { name: "羈絆關係", desc: "<div class='detail-row'><span class='inline-tag name'>阿拉斯托</span><div class='detail-content'>你們是「翼與爪」的死對頭。你嘲笑他像隻脫毛雞，他笑你是地上爬的貓。<br>但這是屬於你們少年的競爭方式，比賽誰先發現獵物是你們的日常樂趣。</div></div><div class='detail-row'><span class='inline-tag name'>梅茲莉</span><div class='detail-content'>你有點怕這個半身人老太婆，但也最黏她。她會給你特製的毒藥，還會幫你梳理毛髮（雖然你會假裝抗拒）。<br>你視她為族裡的長老，誰敢對她不敬，你會第一個撕碎對方。</div></div><div class='detail-row'><span class='inline-tag name'>秀皮利</span><div class='detail-content'>那個老鳥人整天只會「榮譽」、「紀律」的叫，煩死了！<br>你喜歡故意違反他的命令，只為了看他氣得吹鬍子瞪眼。但他救過你一次，你記在心裡（絕對不會說出來）。</div></div><div class='detail-row'><span class='inline-tag name'>阿特爾</span><div class='detail-content'>這個發光的人類很奇怪，總是說些聽不懂的話。<br>但他會用光幫你治療傷口，感覺暖暖的。你覺得他是個還不錯的「巫醫」。</div></div><div class='detail-row'><span class='inline-tag name'>杜爾斯</span><div class='detail-content'>石頭人！他硬邦邦的，還整天拿著石頭板子敲敲打打。<br>你完全無法理解他在幹嘛，但他做的斧頭很利，這點你倒是很欣賞。</div></div>" }
+            ],
+            skills: ["小刀", "隱匿", "求生", "體操", "巧手", "吹箭筒"],
+            heroAbilities: [
+                { name: "背刺", desc: "當你對一名敵人進行近戰攻擊時，若該敵人和你的另一個盟友相距 2 米內，你可以發動此能力。你的攻擊會視為偷襲，代表敵人無法閃避或格擋、你的攻擊檢定獲得 1 個優勢、傷害骰數增加一顆（例如 1D8 變成 2D8）。只有靈巧武器才能發動此能力。" },
+                { name: "妙手空空", desc: "你的手指靈活得令人恐懼，甚至能在刀光劍影中竊取物品。你可以用動作對一個 2 米內的目標進行一次 巧手 檢定（對抗敵人的 察覺 檢定）。若成功，你可以從敵人身上竊取一件未被緊握的物品（如腰帶上的藥水、錢袋、飾品等）。若大成功，你甚至可以解下敵人的副手武器或盾牌，使其落入你手中或掉在地上。" },
+                { name: "狩獵本能", desc: "你可以發動此能力來鎖定一個處於你視線範圍內，或你可以聞到氣味的生物，作為你的獵物（在戰鬥中需要一個動作）。你可以追蹤獵物的氣味一整天，且當你攻擊獵物時，你可以消耗 1 WP 讓該次攻擊獲得 1 個 優勢。" }
+            ],
+            gear: [
+                { name: "黑曜石匕首", desc: "一對粗糙但鋒利的匕首，通常用來處理獵物，但在你手裡是致命的武器。" },
+                { name: "骨製護腕", desc: "用某種大型野獸的骨頭磨製而成，刻有部族的圖騰。是你離家時帶的唯一紀念。" }
+            ]
+        },
+        arascotl: {
+            name: "阿拉斯托", 
+            role: "鷹人 · 獵人", 
+            image: "images/arascotl.webp",
+            stats: { STR: 14, CON: 14, AGI: 16, INT: 11, WIL: 12, CHA: 9 },
+            backstory: [
+                { name: "核心信念", desc: "「風向變了……有些東西不該出現在這片天空下。我的弓已經準備好了。」<br><br><strong>自由之翼：</strong>渴望證明自己，對天空有著強烈的執著，痛恨被束縛或被困在地底。" },
+                { name: "出身背景", desc: "鷹人是傳說中的「懸崖居民」。他的族人曾受夸爾特的祝福。阿拉斯托離開高山部落是為了完成他的成年禮——「初次飛翔（First Flight）」。<br><div class='detail-row'><span class='inline-tag'>鷹之眼</span><div class='detail-content'>他沈默寡言，目光銳利如刃。他能看到幾公里外兔子的鬍鬚顫動，這種視力讓他成為隊伍無可取代的偵察兵。</div></div>" },
+                { name: "扮演方針", desc: "<div class='detail-row'><span class='inline-tag'>扮演建議</span><div class='detail-content'>冷靜、觀察敏銳、少話。你習慣待在高處（屋頂、樹梢）俯瞰眾人，不喜歡擁擠的人群。</div></div><br><div class='detail-row'><span class='inline-tag'>性格弱點</span><div class='detail-content'>幽閉恐懼症。你不適應潮濕的地面環境，對地底空間或狹窄的室內有著與生俱來的恐懼。在這些環境下你的檢定會處於劣勢。</div></div>" },
+                { name: "羈絆關係", desc: "<div class='detail-row'><span class='inline-tag name'>秀皮利</span><div class='detail-content'>他是你的偶像。雖然他是沒有翅膀的人類，但他展現出的「鷹之精神」讓你折服。<br>你在戰鬥中總是配合他的指令，兩人常組成致命的空對地火力網。</div></div><div class='detail-row'><span class='inline-tag name'>杜爾斯</span><div class='detail-content'>你不懂那個矮人為什麼喜歡往地底下鑽。每次他試圖解釋地質學，你就會假裝聽不懂飛走。<br>但他做的箭頭確實很好用，所以你勉強忍受他的嘮叨。</div></div><div class='detail-row'><span class='inline-tag name'>伊格塔卡</span><div class='detail-content'>那隻髒兮兮的貓總是弄得一身泥。雖然你們經常互相嘲諷，但你羨慕他在密林裡的靈活。<br>當他衝得太前時，你會默默幫他射落背後的偷襲者。</div></div><div class='detail-row'><span class='inline-tag name'>阿特爾</span><div class='detail-content'>他是太陽的代言人，而你在天空中飛行時最接近太陽。<br>你對他保持著一種敬畏的距離，並在他的指揮下負責高空警戒。</div></div><div class='detail-row'><span class='inline-tag name'>梅茲莉</span><div class='detail-content'>這位半身人老奶奶對你的羽毛很感興趣，總是想收集你脫落的絨毛。<br>雖然有點奇怪，但她編織的護身符確實很有效。你會帶些稀有的鮮豔鳥羽給她當禮物。</div></div>" }
+            ],
+            skills: ["弓", "察覺", "求生", "醫療", "漁獵", "野獸知識"],
+            heroAbilities: [
+                { name: "飛翼", desc: "翅膀可以讓鷹人用移動力在空中自由飛翔。在戰鬥時，你必須控制雙翅來穩定地進行戰鬥，每輪需消耗 2 WP 才能維持飛行。非戰鬥時，每一刻飛行時間消耗 1 WP。" },
+                { name: "雙重射擊", desc: "當你使用 弓 進行攻擊時，你可以發動此能力來射出兩支箭矢。你可以指定同一個目標、或兩個不同的目標。無論如何，都只進行一次帶有 1 個劣勢的攻擊檢定。傷害分開計算。" },
+                { name: "蝮蛇瞬咬", desc: "發動此能力後，持續一刻時間（或直到一場戰鬥結束）。如同潛伏在樹葉下的毒蛇，你不需要拉開距離就能發動致命一擊。在此期間，當你的攻擊目標位於你 2 米內時，你的 弓 或 吹箭筒 攻擊不會因此獲得劣勢。" }
+            ],
+            gear: [
+                { name: "反曲長弓", desc: "一把特製的戰弓，需要極大的臂力與技巧才能拉開。是你成年禮的證明。" },
+                { name: "鷹羽箭袋", desc: "裝滿了特製的箭矢，每一支都經過平衡處理，適合高空射擊。" }
+            ]
+        },
+        durth: {
+            name: "杜爾斯", 
+            role: "矮人 · 數律學者", 
+            image: "images/durth.webp",
+            stats: { STR: 10, CON: 14, AGI: 12, INT: 17, WIL: 14, CHA: 10 },
+            backstory: [
+                { name: "核心信念", desc: "「別跟我談直覺！這座神廟的幾何結構完全違反了力學常數，這才是災難的源頭！」<br><br><strong>理性至上：</strong>認為世界（包括神力）都是可以被數學與幾何解釋的，痛恨混亂與未知。" },
+                { name: "出身背景", desc: "故鄉在伊茲卡拉沙漠。與一般的鐵匠矮人不同，杜爾斯是一名學者。<br><div class='detail-row'><span class='inline-tag'>數律狂熱</span><div class='detail-content'>他隨身攜帶大量石板計算板，致力於研究神靈回歸對這片土地數律能量的影響。他能在戰鬥中計算出敵人裝甲的薄弱點，或者遺跡陷阱的觸發機率。</div></div>" },
+                { name: "扮演方針", desc: "<div class='detail-row'><span class='inline-tag'>扮演建議</span><div class='detail-content'>嘮叨、學究氣、實事求是。遇到驚奇的事物第一反應不是讚嘆，而是拿出尺來測量。口頭禪是「這不合邏輯」。</div></div><br><div class='detail-row'><span class='inline-tag'>性格弱點</span><div class='detail-content'>過度分析。在緊急情況下，你容易陷入邏輯推演而忽視直覺，或者因為花太多時間計算「最佳路徑」而錯過逃跑機會。</div></div>" },
+                { name: "羈絆關係", desc: "<div class='detail-row'><span class='inline-tag name'>阿特爾</span><div class='detail-content'>雖然你們學科不同，但智力水平相當。你喜歡挑戰他的神學觀點，試圖用數學證明神蹟只是高維度的物理現象。<br>他是你唯一願意承認「有點智慧」的人類。</div></div><div class='detail-row'><span class='inline-tag name'>梅茲莉</span><div class='detail-content'>這個半身人老是用那些輕飄飄的羽毛做裝備，這完全違反了堅固耐用的原則！<br>你們經常為了「黑曜石vs羽毛」哪個更好而在露營時吵架，但你也偷偷佩服她能把那麼軟的東西變硬的技術。</div></div><div class='detail-row'><span class='inline-tag name'>秀皮利</span><div class='detail-content'>他是個頑固的老兵，就像沙漠裡的石頭一樣又硬又乾。<br>你欣賞他的實用主義，在戰術規劃上，他是唯一能聽懂你「幾何佈陣」理論的人。</div></div><div class='detail-row'><span class='inline-tag name'>伊格塔卡</span><div class='detail-content'>這隻豹人是「混亂」的代名詞！他的行動完全無法預測，每次都讓你計算錯誤。<br>你把他視為一個需要解決的「統計學異常值」。</div></div><div class='detail-row'><span class='inline-tag name'>阿拉斯托</span><div class='detail-content'>那隻鳥總是飛來飛去，讓你的測量數據出現誤差。你經常對著天空揮舞算盤叫他下來。<br>但你需要他的眼睛幫你確認遠處的遺跡結構，他是你不可或缺的「觀測儀器」。</div></div>" }
+            ],
+            skills: ["數律學", "調查", "祕聞傳說", "醫療", "繩索", "斧"],
+            heroAbilities: [
+                { name: "術業有專攻：數律學", desc: "你精通神聖的數字與曆法，能從秩序的奧秘中看見世界的規律。數字不是單純的計算，而是眾神遺留於世的密碼。當你進行技能檢定時，合理狀況下可發動此能力改用「數律學」，並獲得 1 個優勢。此外，你能快速測算敵人的站位與距離來找到反擊的機會。當戰鬥的一輪結束時，你可以在抽下一輪的先攻卡前發動此能力。進行「數律學」檢定，若成功，本輪不抽先攻卡，由你直接安排所有戰鬥人員的先攻卡（每場戰鬥限一次）。" },
+                { name: "現場教學", desc: "你可以快速講述知識來幫助所有人。當你在協助他人時，你可以協助複數盟友進行同一項檢定。但你協助的對象有人檢定失敗的話你陷入憤怒狀態（若你還未憤怒）。" },
+                { name: "戰地手術", desc: "你精通人體與生物的解剖結構，能進行比一般包紮更精密的手術。你在進行 急救 動作時可以發動此能力，該次 醫療 檢定獲得優勢。若你擁有 手術工具 ，無須檢定直接成功。" }
+            ],
+            gear: [
+                { name: "黑曜石算板", desc: "刻滿複雜公式的石板，既是計算工具，緊急時也能當盾牌或是砸人的磚頭。質地非常堅硬。" },
+                { name: "幾何手斧", desc: "造型奇特、重心經過精密計算的手斧。每一次揮擊都符合力學原理，能造成最大破壞。" }
+            ]
+        },
+        meztli: {
+            name: "梅茲莉", 
+            role: "半身人 · 羽織工匠", 
+            image: "images/meztli.webp",
+            stats: { STR: 6, CON: 10, AGI: 16, INT: 12, WIL: 15, CHA: 14 },
+            backstory: [
+                { name: "核心信念", desc: "「哎呀，別急躁。最強大的護符往往是用最輕柔的羽毛編織而成的。來，把這戴上。」<br><br><strong>編織者：</strong>相信萬物皆有其「線」，無論是命運還是魔法，只要用心編織，就能守護重要的人。" },
+               { name: "出身背景", desc: "雖然出身於性格野蠻的叢林半身人，但她卻擁有溫和的羽織工匠傳承。她能用珍稀鳥類的羽毛編織出具有奇效的護身符。<br><div class='detail-row'><span class='inline-tag'>隊伍的祖母</span><div class='detail-content'>她是隊伍的後勤核心與心靈港灣。她總是隨身帶著針線與零食，關心大家有沒有吃飽、衣服有沒有破。</div></div>" },
+                { name: "扮演方針", desc: "<div class='detail-row'><span class='inline-tag'>扮演建議</span><div class='detail-content'>慈祥、嘮叨、但是有原則。就像一個愛操心的老奶奶，但在專業領域（魔法工藝）上不容置疑。</div></div><br><div class='detail-row'><span class='inline-tag'>性格弱點</span><div class='detail-content'>行動緩慢與厭惡醜陋。你討厭黑曜石製的粗糙武器（認為其缺乏美感），且因為年紀大，腿腳不便，戰鬥中需要人保護。</div></div>" },
+                { name: "羈絆關係", desc: "<div class='detail-row'><span class='inline-tag name'>伊格塔卡</span><div class='detail-content'>他是你的「乖孫子」。雖然他長著獠牙和爪子，但在你眼裡就是隻大貓。<br>你常給他特製的庫拉里（Kurari）毒藥用以狩獵，並會在戰鬥後幫他挑出腳掌裡的刺。</div></div><div class='detail-row'><span class='inline-tag name'>杜爾斯</span><div class='detail-content'>那個頑固的矮石頭。雖然他嘴很壞，但你知道他是個好人。<br>你會偷偷在他的石斧柄上纏上羽毛防滑，然後看著他一邊抱怨一邊用得很順手而偷笑。</div></div><div class='detail-row'><span class='inline-tag name'>阿特爾</span><div class='detail-content'>你們是隊伍裡唯二的老人家（心理上）。你們共享著年輕人不懂的默契與滄桑。<br>你會提醒他注意身體，別逞強，就像他提醒你別走太快一樣。</div></div><div class='detail-row'><span class='inline-tag name'>秀皮利</span><div class='detail-content'>這位老戰士身上的舊傷比你的針線包還多。你心疼他的堅強，總是變著法子用羽魔法減輕他的負擔。<br>他是你最放心不下的「老孩子」。</div></div><div class='detail-row'><span class='inline-tag name'>阿拉斯托</span><div class='detail-content'>多麼俊俏的孩子，特別是那身羽毛！你總是忍不住想摸摸他的翅膀。<br>你把他當成需要照顧的晚輩，常塞給他一些好吃的果乾。</div></div>" }
+            ],
+            skills: ["工藝", "醫療", "求生", "巧手", "隱匿", "吹箭筒"],
+            heroAbilities: [
+                { name: "動如脫兔", desc: "當你閃避攻擊時，你可以發動此能力，讓你的閃避檢定獲得 1 個優勢。" },
+                { name: "羽符編印", desc: "你掌握了如何使用虹韻的秘密，能將神的奇蹟編碼進精密的羽毛鑲嵌中。花費一班時間與羽毛材料，在非金屬裝備上編織「羽織字形」。鍛造成功則物品增加字形效果並獲得 [工藝等級 ÷ 3] 的充能數；大成功則充能數翻倍。任何知道對應「虹韻指令」的人（以自由動作唸出），可花費 WP 觸發字形效果。" },
+                { name: "織匠大師", desc: "此能力需要織布工具。在一刻時間內，你可以消耗 2 WP，臨時加固一件棉甲的防護效果。該棉甲的護甲值暫時 + 1。一旦在戰鬥中承受過傷害，該強化效果會在該戰鬥結束後終止。" },
+                { name: "蜂鳥迴身", desc: "模仿蜂鳥在空中的靈動姿態，將防禦與反擊合而為一。當敵人移動結束後，你處於敵人 2 米範圍內時，你可以發動此能力。用一個反應動作（若你這回合還未行動），你立即向後方或側向移動最多等同於你移動力一半的距離（此移動不會引發藉機攻擊），並隨即對該敵人用吹箭筒進行遠程攻擊。" }
+            ],
+            gear: [
+                { name: "彩羽斗篷", desc: "用無數細小蜂鳥羽毛編織而成的斗篷，具有微弱的隱身與防護魔法。是你最得意的作品。" },
+                { name: "工匠編織籃", desc: "裝滿了各色羽毛、絲線與毒草藥瓶的籃子。看起來不起眼，裡面卻藏著無數奇妙的道具。" }
+            ]
+        }
+    };
+
+    function openModal(charKey) {
+        const data = characters[charKey];
+        if (!data) return;
+        document.getElementById('modalName').innerText = data.name;
+        document.getElementById('modalRole').innerText = data.role;
+        document.getElementById('statSTR').innerText = data.stats.STR;
+        document.getElementById('statCON').innerText = data.stats.CON;
+        document.getElementById('statAGI').innerText = data.stats.AGI;
+        document.getElementById('statINT').innerText = data.stats.INT;
+        document.getElementById('statWIL').innerText = data.stats.WIL;
+        document.getElementById('statCHA').innerText = data.stats.CHA;
+        document.getElementById('modalImage').style.backgroundImage = `url('${data.image}')`;
+
+        createInteractiveList('backstoryContainer', data.backstory);
+        
+        const skillsContainer = document.getElementById('modalSkills');
+        skillsContainer.innerHTML = '';
+        if (data.skills) data.skills.forEach(skill => {
+            const tag = document.createElement('span'); tag.className = 'skill-tag'; tag.innerText = skill; skillsContainer.appendChild(tag);
+        });
+
+        createInteractiveList('heroAbilitiesContainer', data.heroAbilities);
+
+        const gearContainer = document.getElementById('modalGearContainer');
+        gearContainer.innerHTML = '';
+        if (data.gear) data.gear.forEach(item => {
+            const slot = document.createElement('div'); slot.className = 'gear-slot';
+            // 純文字版裝備，無圖片
+            slot.innerHTML = `<div class="gear-name-label">${item.name}</div><div class="gear-desc-text">${item.desc}</div>`;
+            gearContainer.appendChild(slot);
+        });
+
+        const modal = document.getElementById('charModal');
+        modal.style.display = 'flex';
+        setTimeout(() => { modal.classList.add('active'); }, 10);
+        document.body.style.overflow = 'hidden';
+    }
+
+    function createInteractiveList(containerId, dataArray) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = ''; 
+        if (dataArray) dataArray.forEach((item) => {
+            const wrapper = document.createElement('div'); wrapper.className = 'ability-wrapper';
+            const btn = document.createElement('button'); btn.className = 'ability-btn';
+            btn.innerHTML = `${item.name} <span class="ability-indicator">+</span>`;
+            btn.onclick = function() { 
+                this.classList.toggle('active'); 
+                const content = this.nextElementSibling; 
+                content.classList.toggle('active');
+                if(content.style.maxHeight){ content.style.maxHeight = null; this.querySelector('.ability-indicator').innerText='+'; }
+                else { content.style.maxHeight = content.scrollHeight + "px"; this.querySelector('.ability-indicator').innerText='×'; }
+            };
+            const content = document.createElement('div'); content.className = 'ability-content';
+            content.innerHTML = `<p>${item.desc}</p>`;
+            wrapper.appendChild(btn); wrapper.appendChild(content); container.appendChild(wrapper);
+        });
+    }
+
+    function closeModal(event) {
+        const modal = document.getElementById('charModal');
+        modal.classList.remove('active');
+        setTimeout(() => { modal.style.display = 'none'; }, 300);
+        document.body.style.overflow = 'auto';
+    }
+
+    const canvas = document.getElementById('dustCanvas'); const ctx = canvas.getContext('2d');
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resizeCanvas); resizeCanvas();
+    let particles = [];
+    for(let i=0; i<100; i++) particles.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, size:Math.random()*2, speedY:Math.random()*0.5});
+    function animateParticles(){ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle='rgba(212,175,55,0.3)'; particles.forEach(p=>{ p.y+=p.speedY; if(p.y>canvas.height)p.y=0; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill(); }); requestAnimationFrame(animateParticles); }
+    animateParticles();
+</script>
+</body>
+</html>
